@@ -17,17 +17,14 @@ use JSON;
 # Add config simple for slack bot key
 use Config::Simple;
 
-# Set up prototypes for required subs
-sub slack_get_client($);
-
-my $cfg = new Config::Simple('zkill-watch.config');
+our $cfg = new Config::Simple('zkill-watch.config');
 
 # Declare hashes we will use while we sit running to prevent duplicate API calls
 our $systems = {};
 our $constellations = {};
 our $ships = {};
 
-our $cap_groups = { 
+our $ship_groups = { 
   "30"  => {"name" => "Titan"},
   "547" => {"name" => "Carrier"},
   "485" => {"name" => "Dreadnought"},
@@ -43,7 +40,7 @@ our $system_checks = {
 
 # Get ESI and slack client
 our $esi_client = esi_get_client();
-our $slack_client = slack_get_client($cfg);
+our $slack_client = slack_get_client();
 
 # Get systems for distance calcs 
 foreach my $id (keys %{$system_checks}) {
@@ -108,13 +105,12 @@ sub process_kill {
   print "Kill ".$kill->{"zkb"}->{"url"}."\n";
   # Get attacker ship IDs and process through ESI if we don't already know what they are
   foreach my $attacker (@{$kill->{"attackers"}}) {
-    # Skip attacker entries with no ship type at all
+    # Skip attacker entries with no ship type at all - the ? entries in zkill
     next unless defined $attacker->{"ship_type_id"};
-    #print "Attacker in ".$ships->{$attacker->{"ship_type_id"}}->{"name"}.", ID ".$attacker->{"ship_type_id"}."\n" if $ships->{$attacker->{"ship_type_id"}};
     esi_get_ship($attacker->{"ship_type_id"}) unless $ships->{$attacker->{"ship_type_id"}};
-    if ($cap_groups->{$ships->{$attacker->{"ship_type_id"}}->{"group_id"}}) {
-      #Found matching cap group ID
-      print "Found capital - ".$ships->{$attacker->{"ship_type_id"}}->{"name"}."\n";
+    if ($ship_groups->{$ships->{$attacker->{"ship_type_id"}}->{"group_id"}}) {
+      #Found matching ship group ID
+      print "Found matching ship - ".$ships->{$attacker->{"ship_type_id"}}->{"name"}."\n";
       $ship_match = 1;
     }
   }
@@ -209,8 +205,7 @@ sub esi_get($) {
   return decode_json($esi_client->responseContent);
 }
 
-sub slack_get_client($) {
-  my $cfg = shift;
+sub slack_get_client {
   my $server = "https://slack.com";
   
   my $client = REST::Client->new();
@@ -224,11 +219,11 @@ sub slack_get_client($) {
 }
 
 sub slack_post_kill($) {
-  my $url = shift;
+  my $message = shift;
 
   my $object = {
-    "channel" => "killwatch",
-    "text"    => $url,
+    "channel" => $cfg->param("SLACK_CHANNEL"),
+    "text"    => $message,
     "unfurl_links" => "true",
     "as_user" => "true"
   };
