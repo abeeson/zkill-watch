@@ -9,8 +9,12 @@ use Mojo::IOLoop;
 
 # ESI calls - Simple GETs etc
 use REST::Client;
-
 use JSON;
+
+use Data::Dumper;
+
+# Declare prototypes
+sub esi_search($$);
 
 # Add config simple for slack bot key
 use Config::Simple;
@@ -23,25 +27,30 @@ our $systems = {};
 our $constellations = {};
 our $ships = {};
 
-our $ship_groups = { 
-  "30"  => {"name" => "Titan"},
-  "547" => {"name" => "Carrier"},
-  "485" => {"name" => "Dreadnought"},
-  "659" => {"name" => "Supercarrier"},
-  "1538" => {"name" => "Force Auxiliary"}
-};
-
-our $system_checks = {
-  "30002718" => "Rancer",
-  "30002719" => "Miroitem",
-  "30002691" => "Crielere"
-};
-
 # Get ESI and slack client
 our $esi_client = esi_get_client();
 our $slack_client = slack_get_client();
 
-# Get systems for distance calcs 
+our $ship_groups = {};
+
+# Pull ship groups from config file and build ship_groups list
+foreach my $ship_group ($cfg->param("SHIP_GROUPS")) {
+	my @entry = split(/:/,$ship_group);
+	$ship_groups->{$entry[0]} = $entry[1] if ($entry[0] =~ m/^\d*$/);
+	print "Ship group entry $entry[0]:$entry[1] looks bad, skipped\n" unless ($entry[0] =~ m/^\d*$/);
+}
+
+our $system_checks = {};
+
+# Pull system list from config, get IDs and build system_checks list
+foreach my $sys_check ($cfg->param("SYSTEMS")) {
+	my $sys_id = esi_search("solar_system",$sys_check);
+	
+	$system_checks->{$sys_id->{"solar_system"}->[0]} = $sys_check if $sys_id->{"solar_system"}->[0];
+	print "$sys_check not found, skipping\n" unless $sys_id->{"solar_system"}->[0];
+}
+
+# Get system objects for distance calcs 
 foreach my $id (keys %{$system_checks}) {
   esi_get_system($id);
 }
@@ -192,6 +201,14 @@ sub esi_get_constellation {
 
   #Add to constellations object
   $constellations->{$id} = $constellation;
+}
+
+sub esi_search($$) {
+  #Pull category and name
+  my $category = shift;
+  my $name = shift;
+
+  return esi_get("/v2/search/?strict=1&categories=".$category."&search=".$name);
 }
 
 sub esi_get($) {
