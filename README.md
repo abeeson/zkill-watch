@@ -9,6 +9,7 @@ Can be installed from CPAN if unavailable in your OS packages
 * Config::Simple
 * Mojo::UserAgent
 * IO::Socket::SSL (v2.0.99+)
+* REST::Client
 
 ## Configuration
 
