@@ -23,7 +23,6 @@ To find the group ID you need, you need to do two things:
 
 ##To-Do
 Move system and ship group IDs to config file
-Move slack channel name to config file
 add pre-ESI get sub to return object if present or get if not to standarise the request process and remove duplication/check requirements
 Simplify ship group and system match groups to just be by name
 Test slack post without bot being in channel, expect failure. Write channel join if that is the case
