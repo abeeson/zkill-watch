@@ -13,7 +13,6 @@ Can be installed from CPAN if unavailable in your OS packages
 Set up a slack bot via your slack settings. You want a generic slack bot that is capable of posting to your channel. You can invite it into the channel once you have created it.
 
 ##To-Do
-Fix up indenting to be consistent
 Move system and ship group IDs to config file
 Move slack channel name to config file
 Test slack post without being in channel, expect failure. Write channel join if that is the case
