@@ -12,7 +12,7 @@ Can be installed from CPAN if unavailable in your OS packages
 
 ## Configuration
 
-###Slack
+### Slack
 
 Set up a slack bot via your slack settings. You want a generic slack bot that is capable of posting to your channel. You can invite it into the channel once you have created it.
 
@@ -31,7 +31,11 @@ To find the group ID you need, you need to do two things:
 
 ## To-Do
 
-Move system and ship group IDs to config file
-add pre-ESI get sub to return object if present or get if not to standarise the request process and remove duplication/check requirements
-Simplify ship group and system match groups to just be by name
-Test slack post without bot being in channel, expect failure. Write channel join if that is the case
+* Move system and ship group IDs to config file
+* add pre-ESI get sub to return object if present or get if not to standarise the request process and remove duplication/check requirements
+* Simplify ship group and system match groups to just be by name
+* Test slack post without bot being in channel, expect failure. Write channel join if that is the case
+
+## Notes
+
+The script currently loops inside an infinite while, this is to ensure the websocket will restart if it closes, without losing all the built up objects for systems, ships etc (and preventing extra hits on the ESI APIs)
