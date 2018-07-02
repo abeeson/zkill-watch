@@ -20,7 +20,7 @@ sub esi_search($$);
 use Config::Simple;
 
 our $cfg = new Config::Simple('zkill-watch.config');
-our $debug = $cfg->param("debug") || 1;
+our $debug = $cfg->param("DEBUG") || 1;
 
 # Declare hashes we will use while we sit running to prevent duplicate API calls
 our $systems = {};
