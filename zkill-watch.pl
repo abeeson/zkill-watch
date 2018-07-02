@@ -3,8 +3,6 @@
 use strict;
 use warnings;
 
-our $debug = 1;
-
 # Zkill - Use websockets via Mojo
 use Mojo::UserAgent;
 use Mojo::IOLoop;
@@ -18,6 +16,7 @@ use JSON;
 use Config::Simple;
 
 our $cfg = new Config::Simple('zkill-watch.config');
+our $debug = $cfg->param("debug") || 1;
 
 # Declare hashes we will use while we sit running to prevent duplicate API calls
 our $systems = {};
@@ -90,7 +89,7 @@ while(42) {
   });
 
   # Start event loop if not running
-  print "starting new loop\n";
+  print "starting new loop\n" if ($debug == 1);
   Mojo::IOLoop->start;
   Mojo::IOLoop->stop;
   sleep 5;
@@ -110,7 +109,8 @@ sub process_kill {
     esi_get_ship($attacker->{"ship_type_id"}) unless $ships->{$attacker->{"ship_type_id"}};
     if ($ship_groups->{$ships->{$attacker->{"ship_type_id"}}->{"group_id"}}) {
       #Found matching ship group ID
-      print "Found matching ship - ".$ships->{$attacker->{"ship_type_id"}}->{"name"}."\n";
+      print "Found matching ship - ".$ships->{$attacker->{"ship_type_id"}}->{"name"}."\n" if ($debug == 1);
+      $message .= "Found ".$ships->{$attacker->{"ship_type_id"}}->{"name"}."\n";
       $ship_match = 1;
     }
   }
