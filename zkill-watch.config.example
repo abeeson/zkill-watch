@@ -2,4 +2,6 @@ SLACK_API=*INSERT_YOUR_SLACK_BOT_API_KEY_HERE*
 SLACK_CHANNEL=zkill-watch
 SYSTEMS=Tama
 SHIP_GROUPS=30:Titan,547:Carrier,485:Dreadnought,659:Supercarrier,1538:Force Auxiliary
+MAX_LY=8
+MIN_LY=0
 DEBUG=0

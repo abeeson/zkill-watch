@@ -19,8 +19,15 @@ sub esi_search($$);
 # Add config simple for slack bot key
 use Config::Simple;
 
+# Get config object
 our $cfg = new Config::Simple('zkill-watch.config');
+
+# Get global config options we need to assume state on if not present
 our $debug = $cfg->param("DEBUG") || 1;
+# Default distances - Blops range with no minimum
+our $max_ly = $cfg->param("MAX_LY") || 8;
+our $min_ly = $cfg->param("MIN_LY") || 0;
+
 
 # Declare hashes we will use while we sit running to prevent duplicate API calls
 our $systems = {};
@@ -86,7 +93,7 @@ while(42) {
     # Wait for WebSocket to be closed
     $tx->on(finish => sub {
       my ($tx, $code, $reason) = @_;
-      print "WebSocket closed with status $code.\n";
+      print "WebSocket closed with status $code.\n" if ($debug == 1);
     });
  
     $tx->on(message => sub {
@@ -101,7 +108,7 @@ while(42) {
   print "starting new loop\n" if ($debug == 1);
   Mojo::IOLoop->start;
   Mojo::IOLoop->stop;
-  sleep 5;
+  sleep 1;
 }
 
 sub process_kill {
@@ -109,6 +116,8 @@ sub process_kill {
   my $ship_match = 0;
   my $distance_match = 0;
   my $message = "";
+  my $found_ships = {};
+  my $distances = "";
 
   print "Kill ".$kill->{"zkb"}->{"url"}."\n";
   # Get attacker ship IDs and process through ESI if we don't already know what they are
@@ -119,7 +128,8 @@ sub process_kill {
     if ($ship_groups->{$ships->{$attacker->{"ship_type_id"}}->{"group_id"}}) {
       #Found matching ship group ID
       print "Found matching ship - ".$ships->{$attacker->{"ship_type_id"}}->{"name"}."\n" if ($debug == 1);
-      $message .= "Found ".$ships->{$attacker->{"ship_type_id"}}->{"name"}."\n";
+      #$message .= "Found ".$ships->{$attacker->{"ship_type_id"}}->{"name"}."\n";
+      $found_ships->{$ships->{$attacker->{"ship_type_id"}}->{"name"}}++;
       $ship_match = 1;
     }
   }
@@ -129,11 +139,16 @@ sub process_kill {
 
   foreach my $id (keys %{$system_checks}) {
     my $distance = calc_distance($systems->{$id},$systems->{$kill->{"solar_system_id"}}); 
-    $message .= "Distance to ".$system_checks->{$id}.": ".sprintf("%.4f", $distance)." LY\n";
-    $distance_match = 1 if ($distance <= 8);
+    $distances .= "Distance to ".$system_checks->{$id}.": ".sprintf("%.4f", $distance)." LY\n";
+    $distance_match = 1 if ($distance <= $max_ly && $distance >= $min_ly);
   }
   if ($ship_match eq "1") {
     if ($distance_match eq "1") {
+      $message .= "Kill in *".$systems->{$kill->{"solar_system_id"}}->{"name"}."*\n";
+      foreach my $found_ship (keys %{$found_ships}) {
+        $message .= $found_ship." x".$found_ships->{$found_ship}."\n";
+      }
+      $message .= $distances;
       $message .= $kill->{"zkb"}->{"url"};
       slack_post_kill($message);
     } else {
