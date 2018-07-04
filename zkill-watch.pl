@@ -182,6 +182,7 @@ sub esi_get_client {
   $client->setHost("$server");
   $client->getUseragent()->ssl_opts(verify_hostname => '0');
   $client->getUseragent()->ssl_opts(SSL_verify_mode => '0');
+  $client->getUseragent()->agent("zkill-watch: https://github.com/abeeson/zkill-watch");
   return $client;
 }
 
