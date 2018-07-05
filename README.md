@@ -33,8 +33,8 @@ To find the group ID you need, you need to do two things:
 
 * add pre-ESI get sub to return object if present or get if not to standarise the request process and remove duplication/check requirements
 * Simplify ship group to just be by name - no easy ESI entry to do this though
-* Test slack post without bot being in channel, expect failure. Write channel join if that is the case
 
 ## Notes
 
 The script currently loops inside an infinite while, this is to ensure the websocket will restart if it closes, without losing all the built up objects for systems, ships etc (and preventing extra hits on the ESI APIs)
+Auto channel join for slack is not supported for bots, so ensure you have invited the bot to the channel you want it to post in, or this will fail
