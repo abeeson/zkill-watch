@@ -7,6 +7,7 @@ A script to automatically monitor zkillboard (via websocket) and report kills th
 
 Can be installed from CPAN if unavailable in your OS packages
 * Config::Simple
+* JSON
 * JSON::PP (Required by Mojo but not listed in dependencies)
 * Mojo::UserAgent
 * IO::Socket::SSL (v2.0.99+)
