@@ -12,6 +12,7 @@ Can be installed from CPAN if unavailable in your OS packages
 * Mojo::UserAgent
 * IO::Socket::SSL (v2.0.99+)
 * REST::Client
+* LWP::Protocol::https
 
 ## Configuration
 
